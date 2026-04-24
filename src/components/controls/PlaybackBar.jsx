@@ -2,11 +2,14 @@ import { useEffect } from 'react'
 import { useAlgorithmStore } from '../../store/algorithmStore.js'
 import { usePlaybackStore } from '../../store/playbackStore.js'
 
+const SPEED_OPTIONS = [0.5, 1, 2, 4]
+
 function PlaybackBar() {
   const cursor = usePlaybackStore((state) => state.cursor)
   const isPlaying = usePlaybackStore((state) => state.isPlaying)
   const speed = usePlaybackStore((state) => state.speed)
   const setCursor = usePlaybackStore((state) => state.setCursor)
+  const setSpeed = usePlaybackStore((state) => state.setSpeed)
   const togglePlaying = usePlaybackStore((state) => state.togglePlaying)
   const stopPlaying = usePlaybackStore((state) => state.stopPlaying)
   const steps = useAlgorithmStore((state) => state.steps)
@@ -39,28 +42,46 @@ function PlaybackBar() {
 
   return (
     <div className="flex items-center justify-between gap-4 rounded-3xl border border-border bg-surface px-5 py-4 text-[var(--color-node-text)]">
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="rounded-xl border border-border px-3 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
-          onClick={() => jumpBy(-1)}
-        >
-          ◀
-        </button>
-        <button
-          type="button"
-          className="rounded-xl border border-border px-4 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
-          onClick={togglePlaying}
-        >
-          {isPlaying ? '⏸' : '▶'}
-        </button>
-        <button
-          type="button"
-          className="rounded-xl border border-border px-3 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
-          onClick={() => jumpBy(1)}
-        >
-          ▶
-        </button>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="rounded-xl border border-border px-3 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
+            onClick={() => jumpBy(-1)}
+          >
+            ◀
+          </button>
+          <button
+            type="button"
+            className="rounded-xl border border-border px-4 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
+            onClick={togglePlaying}
+          >
+            {isPlaying ? '⏸' : '▶'}
+          </button>
+          <button
+            type="button"
+            className="rounded-xl border border-border px-3 py-2 font-mono text-sm hover:border-[var(--color-consider)]"
+            onClick={() => jumpBy(1)}
+          >
+            ▶
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {SPEED_OPTIONS.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setSpeed(option)}
+              className={`rounded-lg border px-2 py-1 font-mono text-xs transition-colors ${
+                speed === option
+                  ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.2)] text-white'
+                  : 'border-border text-[var(--color-visited)] hover:border-[var(--color-consider)] hover:text-[var(--color-node-text)]'
+              }`}
+            >
+              {option}x
+            </button>
+          ))}
+        </div>
       </div>
       <div className="flex min-w-[320px] items-center gap-3">
         <input
