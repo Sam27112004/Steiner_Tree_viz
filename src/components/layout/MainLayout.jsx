@@ -60,18 +60,15 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
           </div>
         </section>
 
-        <aside className="flex min-h-0 flex-col gap-4">
+        <aside className="flex min-h-0 flex-col gap-4 lg:sticky lg:top-5 lg:self-start">
           <AlgoSelector />
+          <PlaybackBar />
           <StepLog steps={steps} cursor={cursor} />
           <DPStatePanel renderState={renderState} />
           <ResultPanel />
           <ComparePanel />
         </aside>
       </main>
-
-      <footer className="mx-auto max-w-[1400px] px-5 pb-5">
-        <PlaybackBar />
-      </footer>
     </div>
   )
 }

@@ -13,17 +13,17 @@ function StepLog({ steps, cursor }) {
         <li
           key={step.id}
           ref={stepIndex === cursor ? activeStepRef : null}
-          className={`rounded-2xl border px-4 py-3 transition-colors ${
+          className={`rounded-2xl border px-3 py-2.5 transition-colors ${
             stepIndex === cursor
               ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
               : 'border-transparent bg-[rgba(255,255,255,0.02)] hover:border-border/70'
           }`}
         >
-          <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-visited)]">
+          <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
             <span>{step.type}</span>
             <span>{step.phase}</span>
           </div>
-          <p className="text-sm leading-6 text-[var(--color-node-text)]">{step.explanation}</p>
+          <p className="text-sm leading-5 text-[var(--color-node-text)]">{step.explanation}</p>
         </li>
       )),
     [cursor, steps],
@@ -34,7 +34,7 @@ function StepLog({ steps, cursor }) {
       <h2 className="mb-3 font-display text-lg font-semibold tracking-wide text-[var(--color-node-text)]">
         Step Log
       </h2>
-      <ol className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">{rows}</ol>
+      <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[360px]">{rows}</ol>
     </section>
   )
 }
