@@ -1,4 +1,5 @@
 import GraphCanvas from '../canvas/GraphCanvas.jsx'
+import AlgoSelector from '../controls/AlgoSelector.jsx'
 import GraphPicker from '../controls/GraphPicker.jsx'
 import PlaybackBar from '../controls/PlaybackBar.jsx'
 import StepLog from '../panels/StepLog.jsx'
@@ -49,6 +50,7 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
         </section>
 
         <aside className="flex min-h-0 flex-col gap-4">
+          <AlgoSelector />
           <StepLog steps={steps} cursor={cursor} />
         </aside>
       </main>
