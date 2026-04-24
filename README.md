@@ -27,7 +27,7 @@ The app is built for learning: algorithms emit step-by-step traces, a playback e
   - speed buttons (0.5x, 1x, 2x, 4x)
 - Logs panel with two modes:
   - Step Log for technical checkpoints
-  - Explanation Log for simple, non-technical summaries
+  - Explanation Log for simple, graph-aware summaries that change with the selected algorithm
 - Result summary panel (cost + tree edge list)
 - DP state panel for Steiner subset table snapshots
 - Compare panel with 3 mini canvases and winner badge (lowest cost)
@@ -98,6 +98,7 @@ If the trace feels too detailed, focus on these simple ideas:
 - DP State: shows the current Steiner subset and the cost table behind the answer.
 - Step Log: shows the technical checkpoints if you want the algorithm detail.
 - Explanation Log: gives the same story in a few simple steps.
+- Explanation Log: gives a short graph-aware story that changes with the selected algorithm.
 
 The goal is to understand the story from the picture first, then use the text as confirmation.
 
