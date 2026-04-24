@@ -2,6 +2,7 @@ import GraphCanvas from '../canvas/GraphCanvas.jsx'
 import AlgoSelector from '../controls/AlgoSelector.jsx'
 import GraphPicker from '../controls/GraphPicker.jsx'
 import PlaybackBar from '../controls/PlaybackBar.jsx'
+import ComparePanel from '../panels/ComparePanel.jsx'
 import ResultPanel from '../panels/ResultPanel.jsx'
 import StepLog from '../panels/StepLog.jsx'
 import { usePlaybackStore } from '../../store/playbackStore.js'
@@ -54,6 +55,7 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
           <AlgoSelector />
           <StepLog steps={steps} cursor={cursor} />
           <ResultPanel />
+          <ComparePanel />
         </aside>
       </main>
 
