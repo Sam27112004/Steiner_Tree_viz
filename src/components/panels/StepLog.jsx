@@ -47,11 +47,31 @@ function formatComparison(resultsByAlgorithm) {
   return `On this graph, Steiner costs ${steinerCost}, Dijkstra costs ${dijkstraCost}, and MST costs ${mstCost}.`
 }
 
+function formatWinnerLine(resultsByAlgorithm) {
+  const entries = Object.entries(resultsByAlgorithm)
+    .map(([algorithm, result]) => ({ algorithm, cost: result?.cost }))
+    .filter((entry) => Number.isFinite(entry.cost))
+
+  if (entries.length === 0) {
+    return 'Run all algorithms to see which one is cheapest on this graph.'
+  }
+
+  const best = entries.reduce((winner, current) => (current.cost < winner.cost ? current : winner), entries[0])
+  const labelMap = {
+    steiner: 'Steiner',
+    dijkstra: 'Dijkstra',
+    mst: 'MST',
+  }
+
+  return `${labelMap[best.algorithm] ?? best.algorithm} is cheapest on this graph at cost ${best.cost}.`
+}
+
 function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgorithm }) {
   const terminalCount = graph.defaultTerminals?.length ?? 0
   const nodeCount = graph.nodes?.length ?? 0
   const relayCount = Math.max(0, nodeCount - terminalCount)
   const comparisonLine = formatComparison(resultsByAlgorithm)
+  const winnerLine = formatWinnerLine(resultsByAlgorithm)
 
   const sourceNode = graph.defaultTerminals?.[0] ?? graph.nodes?.[0]?.id ?? 0
   const targetCount = Math.max(0, terminalCount - 1)
@@ -69,18 +89,33 @@ function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgo
         matches: (step) => step.type === 'DP_BASE_INIT',
       },
       {
-        title: 'How Steiner wins here',
-        description: 'It combines terminal groups and keeps the cheaper shared route when this graph offers one.',
-        matches: (step) => step.type === 'DP_SUBSET_START' || step.type === 'DP_SPLIT_UPDATE',
+        title: 'Group the terminals',
+        description: 'It checks small terminal groups and keeps the cheaper shared route whenever two groups overlap.',
+        matches: (step) => step.type === 'DP_SUBSET_START',
       },
       {
-        title: 'Why the center matters',
+        title: 'Look for relay savings',
         description: 'When a middle node makes two terminals cheaper to connect, the DP keeps that relay-based improvement.',
+        matches: (step) => step.type === 'DP_SPLIT_UPDATE',
+      },
+      {
+        title: 'Push costs through the graph',
+        description: 'The DP then relaxes the costs through nearby edges so the best relay route reaches the rest of the graph.',
         matches: (step) => step.type === 'DP_RELAX_UPDATE',
       },
       {
+        title: 'Lock in the subset answers',
+        description: 'At this point the DP table has the cheapest answer for every useful terminal group on this graph.',
+        matches: (step) => step.type === 'DP_SUBSET_DONE',
+      },
+      {
+        title: 'Why Steiner is different',
+        description: `${comparisonLine} The shared relay structure is what can make Steiner cheaper here.`,
+        matches: (step) => step.type === 'RESULT_TREE_EDGE',
+      },
+      {
         title: 'What the final cost means',
-        description: comparisonLine,
+        description: `${winnerLine} That is why this graph is a good Steiner example.`,
         matches: (step) => step.type === 'RESULT_FINAL',
       },
     ],
@@ -91,8 +126,8 @@ function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgo
         matches: (step) => step.type === 'INIT_GRAPH',
       },
       {
-        title: 'How the search grows',
-        description: 'Dijkstra always takes the closest unfinished node first, so the tree expands outward from the source.',
+        title: 'How the search starts',
+        description: 'Dijkstra begins from one source and grows outward step by step.',
         matches: (step) => step.type === 'DIJKSTRA_START',
       },
       {
@@ -106,9 +141,19 @@ function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgo
         matches: (step) => step.type === 'RELAX_EDGE' || step.type === 'EDGE_IGNORED',
       },
       {
+        title: 'Why this graph matters',
+        description: 'On graphs with shared relay nodes, Dijkstra can still miss the globally shared cheapest structure that Steiner finds.',
+        matches: (step) => step.type === 'DIJKSTRA_DONE',
+      },
+      {
         title: 'Why it differs from Steiner',
-        description: comparisonLine,
-        matches: (step) => step.type === 'DIJKSTRA_DONE' || step.type === 'RESULT_FINAL',
+        description: `${comparisonLine} Dijkstra is good for source-to-target travel, but not for terminal sharing.`,
+        matches: (step) => step.type === 'RESULT_TREE_EDGE',
+      },
+      {
+        title: 'What the final cost means',
+        description: `${winnerLine} Dijkstra is best when one source path is enough, but not when terminals need to share a relay.`,
+        matches: (step) => step.type === 'RESULT_FINAL',
       },
     ],
     mst: [
@@ -133,8 +178,18 @@ function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgo
         matches: (step) => step.type === 'MST_SKIP_EDGE',
       },
       {
+        title: 'Why this graph matters',
+        description: 'MST connects every node, so it often spends cost on branches that Steiner does not need for terminal routing.',
+        matches: (step) => step.type === 'ALGORITHM_DONE',
+      },
+      {
         title: 'Why it differs from Steiner',
-        description: comparisonLine,
+        description: `${comparisonLine} MST is the all-node baseline, not the terminal-only answer.`,
+        matches: (step) => step.type === 'RESULT_TREE_EDGE',
+      },
+      {
+        title: 'What the final cost means',
+        description: `${winnerLine} MST is still useful as the all-nodes baseline, but not as the terminal-only answer.`,
         matches: (step) => step.type === 'RESULT_FINAL',
       },
     ],
