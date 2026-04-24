@@ -15,6 +15,7 @@ function NodeSVG({ node, state }) {
   return (
     <g>
       <circle
+        className={state?.status === 'active' ? 'node-pulse' : undefined}
         cx={node.x}
         cy={node.y}
         r="22"
