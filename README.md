@@ -85,11 +85,25 @@ npm run lint
    - Result Summary: selected algorithm cost and chosen edges
    - Compare Trees: side-by-side mini trees and winner badge
 
+## How To Read The Visualization
+
+If the trace feels too detailed, focus on these simple ideas:
+
+- Steiner: connect only the terminals, and use relay nodes only when they reduce the total cost.
+- Dijkstra: start from one source and grow outward through the cheapest known paths.
+- Prim: keep adding the cheapest edge that expands the tree without forming a cycle.
+- Canvas: shows the graph state visually, which is the main teaching surface.
+- DP State: shows the current Steiner subset and the cost table behind the answer.
+- Step Log: gives short checkpoints, not the full mathematical proof.
+
+The goal is to understand the story from the picture first, then use the text as confirmation.
+
 ## Understanding the Comparison
 
 - Steiner often wins when relay nodes reduce total multicast cost.
 - Dijkstra is source-biased and may miss globally shared relays.
 - MST minimizes full-graph spanning cost, not terminal-only multicast cost.
+- The picture should make the difference obvious even before reading the step text.
 
 ## Folder Overview
 
