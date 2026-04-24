@@ -25,7 +25,9 @@ The app is built for learning: algorithms emit step-by-step traces, a playback e
   - next step
   - timeline slider
   - speed buttons (0.5x, 1x, 2x, 4x)
-- Step log with highlighted active step
+- Logs panel with two modes:
+  - Step Log for technical checkpoints
+  - Explanation Log for simple, non-technical summaries
 - Result summary panel (cost + tree edge list)
 - DP state panel for Steiner subset table snapshots
 - Compare panel with 3 mini canvases and winner badge (lowest cost)
@@ -80,10 +82,10 @@ npm run lint
    - slider to scrub timeline
    - speed buttons to change playback rate
 5. Read panels while stepping:
-   - Step Log: human-readable events
-   - DP State: Steiner dp[S][v] progression
-   - Result Summary: selected algorithm cost and chosen edges
-   - Compare Trees: side-by-side mini trees and winner badge
+  - Logs: switch between technical checkpoints and simple explanations
+  - DP State: Steiner dp[S][v] progression
+  - Result Summary: selected algorithm cost and chosen edges
+  - Compare Trees: side-by-side mini trees and winner badge
 
 ## How To Read The Visualization
 
@@ -94,7 +96,8 @@ If the trace feels too detailed, focus on these simple ideas:
 - Prim: keep adding the cheapest edge that expands the tree without forming a cycle.
 - Canvas: shows the graph state visually, which is the main teaching surface.
 - DP State: shows the current Steiner subset and the cost table behind the answer.
-- Step Log: gives short checkpoints, not the full mathematical proof.
+- Step Log: shows the technical checkpoints if you want the algorithm detail.
+- Explanation Log: gives the same story in a few simple steps.
 
 The goal is to understand the story from the picture first, then use the text as confirmation.
 
