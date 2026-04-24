@@ -96,6 +96,110 @@ function simplifyStep(step, nodeMap, edgeMap) {
   }
 }
 
+function buildExplanationRows(steps, nodeMap, edgeMap) {
+  const rows = []
+  const seenTerminalBase = new Set()
+  const seenSubsetStart = new Set()
+  const seenSubsetSplit = new Set()
+  const seenSubsetRelax = new Set()
+  const seenRelaxEdge = new Set()
+
+  let visitCount = 0
+  let mstPickCount = 0
+  let ignoredCount = 0
+
+  for (let stepIndex = 0; stepIndex < steps.length; stepIndex += 1) {
+    const step = steps[stepIndex]
+    let include = false
+
+    switch (step.type) {
+      case 'INIT_GRAPH':
+      case 'ALGORITHM_START':
+      case 'DIJKSTRA_START':
+      case 'DIJKSTRA_DONE':
+      case 'RESULT_FINAL':
+      case 'ALGORITHM_DONE':
+        include = true
+        break
+      case 'VISIT_NODE':
+        visitCount += 1
+        include = visitCount === 1 || visitCount % 3 === 0
+        break
+      case 'RELAX_EDGE': {
+        const edgeId = step.payload?.edgeId
+        if (!seenRelaxEdge.has(edgeId)) {
+          seenRelaxEdge.add(edgeId)
+          include = true
+        }
+        break
+      }
+      case 'EDGE_IGNORED':
+        ignoredCount += 1
+        include = ignoredCount <= 2
+        break
+      case 'MST_NODE_ADDED':
+        include = true
+        break
+      case 'MST_PICK_EDGE':
+        mstPickCount += 1
+        include = mstPickCount % 2 === 1
+        break
+      case 'MST_SKIP_EDGE':
+        include = false
+        break
+      case 'DP_BASE_INIT': {
+        const terminal = step.payload?.terminal
+        if (!seenTerminalBase.has(terminal)) {
+          seenTerminalBase.add(terminal)
+          include = true
+        }
+        break
+      }
+      case 'DP_SUBSET_START': {
+        const subset = step.payload?.subset
+        if (!seenSubsetStart.has(subset)) {
+          seenSubsetStart.add(subset)
+          include = true
+        }
+        break
+      }
+      case 'DP_SPLIT_UPDATE': {
+        const key = `${step.payload?.subset}-${step.payload?.node}`
+        if (!seenSubsetSplit.has(key)) {
+          seenSubsetSplit.add(key)
+          include = true
+        }
+        break
+      }
+      case 'DP_RELAX_UPDATE': {
+        const key = `${step.payload?.subset}`
+        if (!seenSubsetRelax.has(key)) {
+          seenSubsetRelax.add(key)
+          include = true
+        }
+        break
+      }
+      case 'DP_SUBSET_DONE':
+      case 'RESULT_TREE_EDGE':
+        include = true
+        break
+      default:
+        include = false
+        break
+    }
+
+    if (include) {
+      rows.push({
+        id: step.id,
+        sourceIndex: stepIndex,
+        text: simplifyStep(step, nodeMap, edgeMap),
+      })
+    }
+  }
+
+  return rows
+}
+
 function StepLog({ steps, cursor }) {
   const activeStepRef = useRef(null)
   const activePanel = useUiStore((state) => state.activePanel)
@@ -120,19 +224,25 @@ function StepLog({ steps, cursor }) {
     () => new Map((graph.edges ?? []).map((edge) => [edge.id, edge])),
     [graph.edges],
   )
-  const simpleRows = useMemo(
-    () =>
-      steps.map((step, stepIndex) => {
-        const isActive = stepIndex === cursor
-        return {
-          id: step.id,
-          state: stepIndex < cursor ? 'done' : isActive ? 'current' : 'pending',
-          text: simplifyStep(step, nodeMap, edgeMap),
-        }
-      }),
-    [cursor, edgeMap, nodeMap, steps],
+  const explanationRows = useMemo(
+    () => buildExplanationRows(steps, nodeMap, edgeMap),
+    [edgeMap, nodeMap, steps],
   )
-  const currentSimpleStage = simpleRows[cursor]
+
+  const currentExplanationIndex = useMemo(() => {
+    let lastReached = -1
+    for (let index = 0; index < explanationRows.length; index += 1) {
+      if (explanationRows[index].sourceIndex <= cursor) {
+        lastReached = index
+      }
+    }
+    return lastReached
+  }, [cursor, explanationRows])
+
+  const currentSimpleStage =
+    currentExplanationIndex >= 0
+      ? explanationRows[currentExplanationIndex]
+      : explanationRows[0]
 
   const rows = useMemo(
     () =>
@@ -163,13 +273,21 @@ function StepLog({ steps, cursor }) {
 
   const simpleList = useMemo(
     () =>
-      simpleRows.map((stage) => (
+      explanationRows.map((stage, stageIndex) => {
+        const state =
+          stageIndex < currentExplanationIndex
+            ? 'done'
+            : stageIndex === currentExplanationIndex
+              ? 'current'
+              : 'pending'
+
+        return (
         <li
           key={stage.id}
           className={`rounded-2xl border px-3 py-2.5 ${
-            stage.state === 'current'
+            state === 'current'
               ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
-              : stage.state === 'done'
+              : state === 'done'
                 ? 'border-border bg-[rgba(255,255,255,0.03)]'
                 : 'border-transparent bg-[rgba(255,255,255,0.02)] opacity-75'
           }`}
@@ -179,13 +297,14 @@ function StepLog({ steps, cursor }) {
               graph event
             </p>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
-              {stage.state}
+              {state}
             </span>
           </div>
           <p className="text-sm leading-5 text-[var(--color-node-text)]">{stage.text}</p>
         </li>
-      )),
-    [simpleRows],
+      )
+    }),
+    [currentExplanationIndex, explanationRows],
   )
 
   return (
@@ -243,7 +362,7 @@ function StepLog({ steps, cursor }) {
           </div>
 
           <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
-            <span>{simpleRows.length} explanation logs</span>
+            <span>{explanationRows.length} explanation logs</span>
             <span>graph-focused narration</span>
           </div>
 
