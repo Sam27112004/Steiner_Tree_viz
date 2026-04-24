@@ -43,6 +43,14 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
               <div>
                 <h2 className="font-display text-2xl font-bold text-white">{graph.name}</h2>
                 <p className="mt-1 text-sm text-[var(--color-visited)]">{graph.description}</p>
+                {graph.insight ? (
+                  <div className="mt-3 rounded-2xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] px-3 py-2">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-consider)]">
+                      Insight
+                    </p>
+                    <p className="mt-1 text-sm text-[var(--color-node-text)]">{graph.insight}</p>
+                  </div>
+                ) : null}
               </div>
               <div className="rounded-full border border-border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-consider)]">
                 Single graph mode
