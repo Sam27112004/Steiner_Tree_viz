@@ -3,10 +3,10 @@ import { usePlaybackStore } from '../../store/playbackStore.js'
 
 function ResultPanel() {
   const activeTab = usePlaybackStore((state) => state.activeTab)
-  const result = useAlgorithmStore((state) => state.result)
+  const resultsByAlgorithm = useAlgorithmStore((state) => state.resultsByAlgorithm)
+  const result = resultsByAlgorithm[activeTab]
 
   const hasResult = Boolean(result)
-  const isMatchingTab = hasResult && result.algorithm === activeTab
 
   return (
     <section className="rounded-3xl border border-border bg-surface p-4">
@@ -14,7 +14,7 @@ function ResultPanel() {
         Result Summary
       </h2>
 
-      {!isMatchingTab ? (
+      {!hasResult ? (
         <p className="text-sm text-[var(--color-visited)]">
           Run the selected algorithm to view total cost and chosen edges.
         </p>

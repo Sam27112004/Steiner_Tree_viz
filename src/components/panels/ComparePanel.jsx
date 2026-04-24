@@ -7,7 +7,7 @@ const ALGORITHMS = [
   { id: 'mst', label: 'MST (Prim)' },
 ]
 
-function MiniCanvas({ graph, algorithmId, result }) {
+function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
   const highlightedEdges = new Set(result?.treeEdges ?? [])
   const activeNodeIds = new Set()
 
@@ -20,11 +20,22 @@ function MiniCanvas({ graph, algorithmId, result }) {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-[var(--color-bg)] p-3">
+    <div
+      className={`rounded-2xl border bg-[var(--color-bg)] p-3 ${
+        isWinner ? 'border-[var(--color-consider)]' : 'border-border'
+      }`}
+    >
       <div className="mb-2 flex items-center justify-between">
-        <h4 className="font-mono text-xs uppercase tracking-[0.15em] text-[var(--color-consider)]">
-          {algorithmId}
-        </h4>
+        <div className="flex items-center gap-2">
+          <h4 className="font-mono text-xs uppercase tracking-[0.15em] text-[var(--color-consider)]">
+            {algorithmLabel}
+          </h4>
+          {isWinner ? (
+            <span className="rounded-full border border-[var(--color-consider)] bg-[rgba(227,179,65,0.2)] px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.15em] text-white">
+              Winner
+            </span>
+          ) : null}
+        </div>
         <span className="font-mono text-xs text-[var(--color-node-text)]">
           {result ? `cost ${result.cost}` : 'not run'}
         </span>
@@ -38,7 +49,7 @@ function MiniCanvas({ graph, algorithmId, result }) {
 
           return (
             <line
-              key={`${algorithmId}-${edge.id}`}
+              key={`${algorithmLabel}-${edge.id}`}
               x1={fromNode.x}
               y1={fromNode.y}
               x2={toNode.x}
@@ -56,7 +67,7 @@ function MiniCanvas({ graph, algorithmId, result }) {
 
           return (
             <circle
-              key={`${algorithmId}-node-${node.id}`}
+              key={`${algorithmLabel}-node-${node.id}`}
               cx={node.x}
               cy={node.y}
               r="11"
@@ -73,7 +84,17 @@ function MiniCanvas({ graph, algorithmId, result }) {
 
 function ComparePanel() {
   const graph = useGraphStore((state) => state.activeGraph)
-  const result = useAlgorithmStore((state) => state.result)
+  const resultsByAlgorithm = useAlgorithmStore((state) => state.resultsByAlgorithm)
+
+  const ranked = ALGORITHMS.map((algorithm) => ({
+    ...algorithm,
+    result: resultsByAlgorithm[algorithm.id],
+  })).filter((entry) => entry.result)
+
+  const winnerAlgorithmId =
+    ranked.length > 0
+      ? ranked.reduce((best, current) => (current.result.cost < best.result.cost ? current : best)).id
+      : null
 
   return (
     <section className="rounded-3xl border border-border bg-surface p-4 text-[var(--color-node-text)]">
@@ -89,8 +110,9 @@ function ComparePanel() {
           <MiniCanvas
             key={algorithm.id}
             graph={graph}
-            algorithmId={algorithm.label}
-            result={result?.algorithm === algorithm.id ? result : null}
+            algorithmLabel={algorithm.label}
+            result={resultsByAlgorithm[algorithm.id]}
+            isWinner={algorithm.id === winnerAlgorithmId}
           />
         ))}
       </div>
