@@ -7,25 +7,24 @@ function GraphPicker() {
   const activeGraph = useGraphStore((state) => state.activeGraph)
 
   return (
-    <label className="flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-[var(--color-node-text)]">
-      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-consider)]">
+    <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-[var(--color-node-text)]">
+      <label htmlFor="graph-picker" className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-consider)]">
         Graph
-      </span>
+      </label>
       <select
-        className="min-w-[250px] bg-transparent font-mono text-sm text-[var(--color-node-text)] outline-none"
+        id="graph-picker"
+        className="mt-2 w-full rounded-xl border border-border bg-[var(--color-bg)] px-3 py-2 font-mono text-xs text-[var(--color-node-text)] outline-none"
         value={activeGraphId}
         onChange={(event) => setActiveGraphId(event.target.value)}
       >
         {graphs.map((graph) => (
           <option key={graph.id} value={graph.id}>
-            {graph.name}
+            {graph.name} - {graph.description}
           </option>
         ))}
       </select>
-      <span className="max-w-[360px] text-xs text-[var(--color-visited)]">
-        {activeGraph.description}
-      </span>
-    </label>
+      <p className="mt-2 text-xs text-[var(--color-visited)]">{activeGraph.description}</p>
+    </div>
   )
 }
 
