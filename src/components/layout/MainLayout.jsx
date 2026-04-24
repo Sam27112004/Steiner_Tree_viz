@@ -27,10 +27,10 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
             <GraphPicker />
             <button
               type="button"
-              className="rounded-2xl border border-[var(--color-terminal)] bg-[rgba(247,129,102,0.12)] px-5 py-3 font-mono text-sm font-semibold text-white transition hover:bg-[rgba(247,129,102,0.22)]"
+              className="rounded-2xl border border-[var(--color-terminal)] bg-[rgba(247,129,102,0.12)] px-5 py-3 font-mono text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[rgba(247,129,102,0.22)]"
               onClick={onRunSteiner}
             >
-              Run Steiner
+              Run All Algorithms
             </button>
           </div>
         </div>
@@ -38,7 +38,7 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
 
       <main className="mx-auto grid max-w-[1400px] gap-5 px-5 py-5 lg:grid-cols-[1.4fr_0.9fr]">
         <section className="flex min-h-0 flex-col gap-4">
-          <div className="rounded-3xl border border-border bg-surface p-4">
+          <div className="rounded-3xl border border-border bg-surface p-4 shadow-[0_18px_60px_rgba(0,0,0,0.28)] transition-shadow duration-300 hover:shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h2 className="font-display text-2xl font-bold text-white">{graph.name}</h2>
@@ -53,7 +53,7 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
                 ) : null}
               </div>
               <div className="rounded-full border border-border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.25em] text-[var(--color-consider)]">
-                Single graph mode
+                Interactive mode
               </div>
             </div>
             <GraphCanvas graph={graph} renderState={renderState} />

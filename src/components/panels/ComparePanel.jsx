@@ -22,8 +22,10 @@ function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
   return (
     <div
       className={`rounded-2xl border bg-[var(--color-bg)] p-3 ${
-        isWinner ? 'border-[var(--color-consider)]' : 'border-border'
-      }`}
+        isWinner
+          ? 'border-[var(--color-consider)] shadow-[0_0_0_1px_rgba(227,179,65,0.2)]'
+          : 'border-border hover:border-[var(--color-consider)]/60'
+      } group`}
     >
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -41,7 +43,10 @@ function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
         </span>
       </div>
 
-      <svg viewBox="0 0 800 500" className="h-32 w-full rounded-xl border border-border bg-surface">
+      <svg
+        viewBox="0 0 800 500"
+        className="h-32 w-full rounded-xl border border-border bg-surface transition-shadow duration-200 group-hover:shadow-[inset_0_0_0_1px_rgba(227,179,65,0.2)]"
+      >
         {graph.edges.map((edge) => {
           const fromNode = graph.nodes.find((node) => node.id === edge.u)
           const toNode = graph.nodes.find((node) => node.id === edge.v)
@@ -97,7 +102,7 @@ function ComparePanel() {
       : null
 
   return (
-    <section className="rounded-3xl border border-border bg-surface p-4 text-[var(--color-node-text)]">
+    <section className="rounded-3xl border border-border bg-surface p-4 text-[var(--color-node-text)] shadow-[0_12px_44px_rgba(0,0,0,0.22)]">
       <div className="mb-3">
         <h3 className="font-display text-lg font-semibold text-white">Compare Trees</h3>
         <p className="mt-1 text-xs text-[var(--color-visited)]">

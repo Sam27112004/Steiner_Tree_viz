@@ -15,8 +15,8 @@ function StepLog({ steps, cursor }) {
           ref={stepIndex === cursor ? activeStepRef : null}
           className={`rounded-2xl border px-4 py-3 transition-colors ${
             stepIndex === cursor
-              ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)]'
-              : 'border-transparent bg-[rgba(255,255,255,0.02)]'
+              ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
+              : 'border-transparent bg-[rgba(255,255,255,0.02)] hover:border-border/70'
           }`}
         >
           <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-visited)]">
@@ -30,7 +30,7 @@ function StepLog({ steps, cursor }) {
   )
 
   return (
-    <section className="flex h-full flex-col rounded-3xl border border-border bg-surface p-4">
+    <section className="flex h-full flex-col rounded-3xl border border-border bg-surface p-4 shadow-[0_12px_44px_rgba(0,0,0,0.22)]">
       <h2 className="mb-3 font-display text-lg font-semibold tracking-wide text-[var(--color-node-text)]">
         Step Log
       </h2>

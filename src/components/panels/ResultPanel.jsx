@@ -9,7 +9,7 @@ function ResultPanel() {
   const hasResult = Boolean(result)
 
   return (
-    <section className="rounded-3xl border border-border bg-surface p-4">
+    <section className="rounded-3xl border border-border bg-surface p-4 shadow-[0_12px_44px_rgba(0,0,0,0.22)]">
       <h2 className="mb-3 font-display text-lg font-semibold tracking-wide text-[var(--color-node-text)]">
         Result Summary
       </h2>
@@ -29,7 +29,10 @@ function ResultPanel() {
             </p>
             <ul className="max-h-28 space-y-2 overflow-y-auto pr-1 text-sm">
               {result.treeEdges.map((edgeId) => (
-                <li key={edgeId} className="rounded-lg border border-border px-3 py-1.5 font-mono">
+                <li
+                  key={edgeId}
+                  className="rounded-lg border border-border px-3 py-1.5 font-mono transition-colors hover:border-[var(--color-consider)]"
+                >
                   {edgeId}
                 </li>
               ))}
