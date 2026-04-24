@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { useAlgorithmStore } from '../../store/algorithmStore.js'
 import { useGraphStore } from '../../store/graphStore.js'
-import { usePlaybackStore } from '../../store/playbackStore.js'
 import { useUiStore } from '../../store/uiStore.js'
 
 const IMPORTANT_STEP_TYPES = new Set([
@@ -28,184 +26,74 @@ const LOG_TABS = [
   { id: 'explain', label: 'Explanation Log' },
 ]
 
-function formatComparison(resultsByAlgorithm) {
-  const steinerCost = resultsByAlgorithm.steiner?.cost
-  const dijkstraCost = resultsByAlgorithm.dijkstra?.cost
-  const mstCost = resultsByAlgorithm.mst?.cost
-
-  if (
-    steinerCost === undefined ||
-    dijkstraCost === undefined ||
-    mstCost === undefined ||
-    steinerCost === null ||
-    dijkstraCost === null ||
-    mstCost === null
-  ) {
-    return 'Run all algorithms to see the cost difference on this graph.'
-  }
-
-  return `On this graph, Steiner costs ${steinerCost}, Dijkstra costs ${dijkstraCost}, and MST costs ${mstCost}.`
+function labelForNode(nodeId, nodeMap) {
+  return nodeMap.get(nodeId) ?? `Node ${nodeId}`
 }
 
-function formatWinnerLine(resultsByAlgorithm) {
-  const entries = Object.entries(resultsByAlgorithm)
-    .map(([algorithm, result]) => ({ algorithm, cost: result?.cost }))
-    .filter((entry) => Number.isFinite(entry.cost))
-
-  if (entries.length === 0) {
-    return 'Run all algorithms to see which one is cheapest on this graph.'
+function edgeText(edgeId, edgeMap, nodeMap) {
+  const edge = edgeMap.get(edgeId)
+  if (!edge) {
+    return `edge ${edgeId}`
   }
-
-  const best = entries.reduce((winner, current) => (current.cost < winner.cost ? current : winner), entries[0])
-  const labelMap = {
-    steiner: 'Steiner',
-    dijkstra: 'Dijkstra',
-    mst: 'MST',
-  }
-
-  return `${labelMap[best.algorithm] ?? best.algorithm} is cheapest on this graph at cost ${best.cost}.`
+  return `${labelForNode(edge.u, nodeMap)} - ${labelForNode(edge.v, nodeMap)} (w=${edge.weight})`
 }
 
-function buildExplanationStages({ activeTab, graph, steps, cursor, resultsByAlgorithm }) {
-  const terminalCount = graph.defaultTerminals?.length ?? 0
-  const nodeCount = graph.nodes?.length ?? 0
-  const relayCount = Math.max(0, nodeCount - terminalCount)
-  const comparisonLine = formatComparison(resultsByAlgorithm)
-  const winnerLine = formatWinnerLine(resultsByAlgorithm)
-
-  const sourceNode = graph.defaultTerminals?.[0] ?? graph.nodes?.[0]?.id ?? 0
-  const targetCount = Math.max(0, terminalCount - 1)
-
-  const stageMap = {
-    steiner: [
-      {
-        title: 'What this graph asks for',
-        description: `This graph has ${terminalCount} terminal node(s) among ${nodeCount} total nodes, so ${relayCount} other node(s) may act as relay points. ${graph.insight ?? ''}`.trim(),
-        matches: (step) => step.type === 'INIT_GRAPH',
-      },
-      {
-        title: 'Why the DP starts small',
-        description: 'Steiner first solves easy one-terminal cases so it can safely build the bigger answer later.',
-        matches: (step) => step.type === 'DP_BASE_INIT',
-      },
-      {
-        title: 'Group the terminals',
-        description: 'It checks small terminal groups and keeps the cheaper shared route whenever two groups overlap.',
-        matches: (step) => step.type === 'DP_SUBSET_START',
-      },
-      {
-        title: 'Look for relay savings',
-        description: 'When a middle node makes two terminals cheaper to connect, the DP keeps that relay-based improvement.',
-        matches: (step) => step.type === 'DP_SPLIT_UPDATE',
-      },
-      {
-        title: 'Push costs through the graph',
-        description: 'The DP then relaxes the costs through nearby edges so the best relay route reaches the rest of the graph.',
-        matches: (step) => step.type === 'DP_RELAX_UPDATE',
-      },
-      {
-        title: 'Lock in the subset answers',
-        description: 'At this point the DP table has the cheapest answer for every useful terminal group on this graph.',
-        matches: (step) => step.type === 'DP_SUBSET_DONE',
-      },
-      {
-        title: 'Why Steiner is different',
-        description: `${comparisonLine} The shared relay structure is what can make Steiner cheaper here.`,
-        matches: (step) => step.type === 'RESULT_TREE_EDGE',
-      },
-      {
-        title: 'What the final cost means',
-        description: `${winnerLine} That is why this graph is a good Steiner example.`,
-        matches: (step) => step.type === 'RESULT_FINAL',
-      },
-    ],
-    dijkstra: [
-      {
-        title: 'What this graph asks for',
-        description: `We start from terminal ${sourceNode} and try to reach ${targetCount} other terminal(s) using the cheapest paths from one source. ${graph.insight ?? ''}`.trim(),
-        matches: (step) => step.type === 'INIT_GRAPH',
-      },
-      {
-        title: 'How the search starts',
-        description: 'Dijkstra begins from one source and grows outward step by step.',
-        matches: (step) => step.type === 'DIJKSTRA_START',
-      },
-      {
-        title: 'What a visit means',
-        description: 'Each visited node is the next best known place to continue from. The color change shows the search frontier moving.',
-        matches: (step) => step.type === 'VISIT_NODE',
-      },
-      {
-        title: 'Why some edges are kept',
-        description: 'If a new path is cheaper, Dijkstra replaces the older one. If not, it keeps the better route already found.',
-        matches: (step) => step.type === 'RELAX_EDGE' || step.type === 'EDGE_IGNORED',
-      },
-      {
-        title: 'Why this graph matters',
-        description: 'On graphs with shared relay nodes, Dijkstra can still miss the globally shared cheapest structure that Steiner finds.',
-        matches: (step) => step.type === 'DIJKSTRA_DONE',
-      },
-      {
-        title: 'Why it differs from Steiner',
-        description: `${comparisonLine} Dijkstra is good for source-to-target travel, but not for terminal sharing.`,
-        matches: (step) => step.type === 'RESULT_TREE_EDGE',
-      },
-      {
-        title: 'What the final cost means',
-        description: `${winnerLine} Dijkstra is best when one source path is enough, but not when terminals need to share a relay.`,
-        matches: (step) => step.type === 'RESULT_FINAL',
-      },
-    ],
-    mst: [
-      {
-        title: 'What this graph asks for',
-        description: `Prim ignores the terminal idea and tries to connect every node in the graph with the lowest total cost. ${graph.insight ?? ''}`.trim(),
-        matches: (step) => step.type === 'INIT_GRAPH',
-      },
-      {
-        title: 'How the tree grows',
-        description: 'It starts from one node and always adds the cheapest safe edge that does not create a loop.',
-        matches: (step) => step.type === 'MST_NODE_ADDED',
-      },
-      {
-        title: 'Why cheap edges matter',
-        description: 'Every picked edge expands the tree as cheaply as possible, which is good for covering the whole graph.',
-        matches: (step) => step.type === 'MST_PICK_EDGE',
-      },
-      {
-        title: 'Why some edges are skipped',
-        description: 'An edge that closes a cycle is skipped, even if it is cheap, because a tree cannot have loops.',
-        matches: (step) => step.type === 'MST_SKIP_EDGE',
-      },
-      {
-        title: 'Why this graph matters',
-        description: 'MST connects every node, so it often spends cost on branches that Steiner does not need for terminal routing.',
-        matches: (step) => step.type === 'ALGORITHM_DONE',
-      },
-      {
-        title: 'Why it differs from Steiner',
-        description: `${comparisonLine} MST is the all-node baseline, not the terminal-only answer.`,
-        matches: (step) => step.type === 'RESULT_TREE_EDGE',
-      },
-      {
-        title: 'What the final cost means',
-        description: `${winnerLine} MST is still useful as the all-nodes baseline, but not as the terminal-only answer.`,
-        matches: (step) => step.type === 'RESULT_FINAL',
-      },
-    ],
+function subsetText(payload) {
+  if (payload?.subsetLabel) {
+    return payload.subsetLabel
   }
+  if (payload?.subset !== undefined) {
+    return `subset ${payload.subset}`
+  }
+  return 'current subset'
+}
 
-  const definitions = stageMap[activeTab] ?? stageMap.steiner
-  const seenStageIndices = definitions
-    .map((definition, stageIndex) => (steps.slice(0, cursor + 1).some(definition.matches) ? stageIndex : -1))
-    .filter((stageIndex) => stageIndex >= 0)
-  const currentStageIndex = seenStageIndices.length > 0 ? seenStageIndices[seenStageIndices.length - 1] : 0
-
-  return definitions.map((definition, stageIndex) => ({
-    ...definition,
-    state:
-      stageIndex < currentStageIndex ? 'done' : stageIndex === currentStageIndex ? 'current' : 'pending',
-  }))
+function simplifyStep(step, nodeMap, edgeMap) {
+  switch (step.type) {
+    case 'INIT_GRAPH': {
+      const terminals = step.payload?.graph?.defaultTerminals ?? []
+      const terminalNames = terminals.length
+        ? terminals.map((nodeId) => labelForNode(nodeId, nodeMap)).join(', ')
+        : 'none selected'
+      return `Graph loaded. Terminals: ${terminalNames}.`
+    }
+    case 'ALGORITHM_START':
+      return 'Algorithm started on this graph.'
+    case 'DIJKSTRA_START':
+      return `Dijkstra starts from ${labelForNode(step.payload?.source, nodeMap)}.`
+    case 'VISIT_NODE':
+      return `Now exploring ${labelForNode(step.payload?.node, nodeMap)} as the next closest node.`
+    case 'RELAX_EDGE':
+      return `Path improved through ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)}.`
+    case 'EDGE_IGNORED':
+      return `Skipped ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)} because an existing path is cheaper.`
+    case 'DIJKSTRA_DONE':
+      return 'Dijkstra finished building its shortest-path tree.'
+    case 'MST_NODE_ADDED':
+      return `${labelForNode(step.payload?.node, nodeMap)} is now included in the MST tree.`
+    case 'MST_PICK_EDGE':
+      return `Added ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)} to grow the MST.`
+    case 'MST_SKIP_EDGE':
+      return `Skipped ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)} to avoid making a cycle.`
+    case 'DP_BASE_INIT':
+      return `Base DP values set for terminal ${labelForNode(step.payload?.terminal, nodeMap)}.`
+    case 'DP_SUBSET_START':
+      return `Steiner is now solving ${subsetText(step.payload)}.`
+    case 'DP_SPLIT_UPDATE':
+      return `Found a cheaper way to connect ${subsetText(step.payload)} at ${labelForNode(step.payload?.node, nodeMap)}.`
+    case 'DP_RELAX_UPDATE':
+      return `Improved ${subsetText(step.payload)} by routing through ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)}.`
+    case 'DP_SUBSET_DONE':
+      return `Finished computing ${subsetText(step.payload)}.`
+    case 'RESULT_TREE_EDGE':
+      return `Final tree includes ${edgeText(step.payload?.edgeId, edgeMap, nodeMap)}.`
+    case 'RESULT_FINAL':
+      return `Final cost is ${step.payload?.cost}.`
+    case 'ALGORITHM_DONE':
+      return 'Algorithm run completed for this graph.'
+    default:
+      return step.explanation
+  }
 }
 
 function StepLog({ steps, cursor }) {
@@ -213,8 +101,6 @@ function StepLog({ steps, cursor }) {
   const activePanel = useUiStore((state) => state.activePanel)
   const setActivePanel = useUiStore((state) => state.setActivePanel)
   const graph = useGraphStore((state) => state.activeGraph)
-  const activeAlgorithm = usePlaybackStore((state) => state.activeTab)
-  const resultsByAlgorithm = useAlgorithmStore((state) => state.resultsByAlgorithm)
 
   useEffect(() => {
     activeStepRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
@@ -226,18 +112,27 @@ function StepLog({ steps, cursor }) {
   )
 
   const currentStep = steps[cursor]
-  const simpleStages = useMemo(
-    () =>
-      buildExplanationStages({
-        activeTab: activeAlgorithm,
-        graph,
-        steps,
-        cursor,
-        resultsByAlgorithm,
-      }),
-    [activeAlgorithm, cursor, graph, resultsByAlgorithm, steps],
+  const nodeMap = useMemo(
+    () => new Map((graph.nodes ?? []).map((node) => [node.id, node.label || `Node ${node.id}`])),
+    [graph.nodes],
   )
-  const currentSimpleStage = simpleStages.find((stage) => stage.state === 'current') ?? simpleStages[0]
+  const edgeMap = useMemo(
+    () => new Map((graph.edges ?? []).map((edge) => [edge.id, edge])),
+    [graph.edges],
+  )
+  const simpleRows = useMemo(
+    () =>
+      steps.map((step, stepIndex) => {
+        const isActive = stepIndex === cursor
+        return {
+          id: step.id,
+          state: stepIndex < cursor ? 'done' : isActive ? 'current' : 'pending',
+          text: simplifyStep(step, nodeMap, edgeMap),
+        }
+      }),
+    [cursor, edgeMap, nodeMap, steps],
+  )
+  const currentSimpleStage = simpleRows[cursor]
 
   const rows = useMemo(
     () =>
@@ -266,11 +161,11 @@ function StepLog({ steps, cursor }) {
     [activeStepRef, cursor, importantSteps, steps],
   )
 
-  const simpleRows = useMemo(
+  const simpleList = useMemo(
     () =>
-      simpleStages.map((stage) => (
+      simpleRows.map((stage) => (
         <li
-          key={stage.title}
+          key={stage.id}
           className={`rounded-2xl border px-3 py-2.5 ${
             stage.state === 'current'
               ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
@@ -281,16 +176,16 @@ function StepLog({ steps, cursor }) {
         >
           <div className="mb-1 flex items-center justify-between gap-3">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-consider)]">
-              {stage.title}
+              graph event
             </p>
             <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
               {stage.state}
             </span>
           </div>
-          <p className="text-sm leading-5 text-[var(--color-node-text)]">{stage.description}</p>
+          <p className="text-sm leading-5 text-[var(--color-node-text)]">{stage.text}</p>
         </li>
       )),
-    [simpleStages],
+    [simpleRows],
   )
 
   return (
@@ -343,11 +238,16 @@ function StepLog({ steps, cursor }) {
               In plain words
             </p>
             <p className="text-sm leading-5 text-[var(--color-node-text)]">
-              {currentSimpleStage?.title ?? 'Overview'} - {currentSimpleStage?.description ?? 'Run an algorithm to see the simple explanation.'}
+              {currentSimpleStage?.text ?? 'Run an algorithm to see graph-level explanation steps.'}
             </p>
           </div>
 
-          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[280px]">{simpleRows}</ol>
+          <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
+            <span>{simpleRows.length} explanation logs</span>
+            <span>graph-focused narration</span>
+          </div>
+
+          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[280px]">{simpleList}</ol>
         </>
       )}
     </section>
