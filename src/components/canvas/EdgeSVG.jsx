@@ -12,6 +12,8 @@ function EdgeSVG({ edge, fromNode, toNode, state }) {
   const visualStyle = EDGE_STYLE[state?.status] ?? EDGE_STYLE.default
   const midpointX = (fromNode.x + toNode.x) / 2
   const midpointY = (fromNode.y + toNode.y) / 2
+  const edgeLength = Math.hypot(toNode.x - fromNode.x, toNode.y - fromNode.y)
+  const shouldAnimateDraw = state?.status === 'inTree' && state?.animated
 
   return (
     <g>
@@ -22,9 +24,21 @@ function EdgeSVG({ edge, fromNode, toNode, state }) {
         y2={toNode.y}
         stroke={visualStyle.stroke}
         strokeWidth={visualStyle.width}
+        strokeDasharray={shouldAnimateDraw ? edgeLength : undefined}
+        strokeDashoffset={shouldAnimateDraw ? 0 : undefined}
         strokeLinecap="round"
         style={{ transition: 'stroke 200ms ease, stroke-width 200ms ease' }}
-      />
+      >
+        {shouldAnimateDraw ? (
+          <animate
+            attributeName="stroke-dashoffset"
+            from={edgeLength}
+            to="0"
+            dur="420ms"
+            fill="freeze"
+          />
+        ) : null}
+      </line>
       <rect
         x={midpointX - 12}
         y={midpointY - 9}
