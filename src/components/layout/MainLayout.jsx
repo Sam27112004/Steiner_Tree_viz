@@ -5,7 +5,6 @@ import PlaybackBar from '../controls/PlaybackBar.jsx'
 import ComparePanel from '../panels/ComparePanel.jsx'
 import DPStatePanel from '../panels/DPStatePanel.jsx'
 import ResultPanel from '../panels/ResultPanel.jsx'
-import ProcessGuidePanel from '../panels/ProcessGuidePanel.jsx'
 import StepLog from '../panels/StepLog.jsx'
 import { usePlaybackStore } from '../../store/playbackStore.js'
 
@@ -62,7 +61,6 @@ function MainLayout({ graph, renderState, steps, onRunSteiner }) {
         </section>
 
         <aside className="flex min-h-0 flex-col gap-4 lg:sticky lg:top-5 lg:self-start">
-          <ProcessGuidePanel />
           <AlgoSelector />
           <PlaybackBar />
           <StepLog steps={steps} cursor={cursor} />
