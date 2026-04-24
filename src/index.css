@@ -1,0 +1,69 @@
+:root {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #30363d;
+  --color-terminal: #f78166;
+  --color-relay: #79c0ff;
+  --color-active: #56d364;
+  --color-visited: #484f58;
+  --color-in-tree: #d2a8ff;
+  --color-consider: #e3b341;
+  --color-reject: #f85149;
+  --color-node-bg: #21262d;
+  --color-node-text: #c9d1d9;
+  --color-edge-def: #30363d;
+  --font-display: 'Syne', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  color-scheme: dark;
+  color: var(--color-node-text);
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(121, 192, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 80% 20%, rgba(247, 129, 102, 0.08), transparent 24%),
+    var(--color-bg);
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+svg {
+  display: block;
+}
+
+::selection {
+  background: rgba(121, 192, 255, 0.3);
+  color: white;
+}

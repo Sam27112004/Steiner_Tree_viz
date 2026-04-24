@@ -1,0 +1,63 @@
+const makeEdge = (u, v, weight) => ({
+  id: `${Math.min(u, v)}-${Math.max(u, v)}`,
+  u,
+  v,
+  weight,
+})
+
+export const GRAPHS = {
+  steiner_advantage: {
+    id: 'steiner_advantage',
+    name: 'Steiner Advantage',
+    description: 'A relay node pulls the three terminals together more cheaply than a direct spanning tree.',
+    insight: 'Node 4 acts as a relay and cuts the total cost well below an MST or SPT.',
+    nodes: [
+      { id: 0, label: 'A', x: 110, y: 240 },
+      { id: 1, label: 'B', x: 235, y: 120 },
+      { id: 2, label: 'C', x: 235, y: 360 },
+      { id: 3, label: 'D', x: 390, y: 80 },
+      { id: 4, label: 'R', x: 410, y: 240 },
+      { id: 5, label: 'E', x: 390, y: 400 },
+      { id: 6, label: 'G', x: 560, y: 190 },
+      { id: 7, label: 'H', x: 560, y: 340 },
+    ],
+    edges: [
+      makeEdge(0, 1, 4),
+      makeEdge(0, 2, 6),
+      makeEdge(1, 3, 5),
+      makeEdge(1, 4, 2),
+      makeEdge(2, 4, 2),
+      makeEdge(2, 5, 4),
+      makeEdge(3, 4, 2),
+      makeEdge(3, 6, 6),
+      makeEdge(4, 5, 3),
+      makeEdge(4, 6, 3),
+      makeEdge(4, 7, 5),
+      makeEdge(5, 7, 3),
+      makeEdge(6, 7, 2),
+    ],
+    defaultTerminals: [0, 3, 6],
+  },
+  base_case: {
+    id: 'base_case',
+    name: 'Base Case',
+    description: 'A tiny graph with two terminals for tracing the DP by hand.',
+    insight: 'The first DP layer is just shortest paths from each terminal, which makes the recurrence concrete.',
+    nodes: [
+      { id: 0, label: 'A', x: 140, y: 240 },
+      { id: 1, label: 'B', x: 270, y: 120 },
+      { id: 2, label: 'C', x: 270, y: 360 },
+      { id: 3, label: 'D', x: 430, y: 220 },
+      { id: 4, label: 'E', x: 560, y: 240 },
+    ],
+    edges: [
+      makeEdge(0, 1, 2),
+      makeEdge(0, 2, 5),
+      makeEdge(1, 2, 3),
+      makeEdge(1, 3, 4),
+      makeEdge(2, 3, 2),
+      makeEdge(3, 4, 3),
+    ],
+    defaultTerminals: [0, 3],
+  },
+}
