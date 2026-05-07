@@ -1,29 +1,46 @@
 import { useGraphStore } from '../../store/graphStore.js'
+import { useAlgorithmStore } from '../../store/algorithmStore.js'
+import { usePlaybackStore } from '../../store/playbackStore.js'
+import { useUiStore } from '../../store/uiStore.js'
 
 function GraphPicker() {
   const graphs = useGraphStore((state) => state.graphs)
   const activeGraphId = useGraphStore((state) => state.activeGraphId)
   const setActiveGraphId = useGraphStore((state) => state.setActiveGraphId)
-  const activeGraph = useGraphStore((state) => state.activeGraph)
+  const clearResult = useAlgorithmStore((state) => state.clearResult)
+  const setCursor = usePlaybackStore((state) => state.setCursor)
+  const stopPlaying = usePlaybackStore((state) => state.stopPlaying)
+  const setStoryCursor = useUiStore((state) => state.setStoryCursor)
+  const setCanvasMode = useUiStore((state) => state.setCanvasMode)
+  const setTechnicalPanel = useUiStore((state) => state.setTechnicalPanel)
+
+  const handleGraphChange = (event) => {
+    setActiveGraphId(event.target.value)
+    clearResult()
+    setCursor(0)
+    setStoryCursor(0)
+    setCanvasMode('story')
+    setTechnicalPanel('guide')
+    stopPlaying()
+  }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface px-4 py-3 text-[var(--color-node-text)]">
-      <label htmlFor="graph-picker" className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--color-consider)]">
+    <div className="w-[280px] rounded-xl border border-border bg-surface px-3 py-2 text-[var(--color-node-text)]">
+      <label htmlFor="graph-picker" className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-consider)]">
         Graph
       </label>
       <select
         id="graph-picker"
-        className="mt-2 w-full rounded-xl border border-border bg-[var(--color-bg)] px-3 py-2 font-mono text-xs text-[var(--color-node-text)] outline-none"
+        className="mt-1 w-full rounded-lg border border-border bg-[var(--color-bg)] px-2 py-1.5 font-mono text-xs text-[var(--color-node-text)] outline-none"
         value={activeGraphId}
-        onChange={(event) => setActiveGraphId(event.target.value)}
+        onChange={handleGraphChange}
       >
         {graphs.map((graph) => (
           <option key={graph.id} value={graph.id}>
-            {graph.name} - {graph.description}
+            {graph.name}
           </option>
         ))}
       </select>
-      <p className="mt-2 text-xs text-[var(--color-visited)]">{activeGraph.description}</p>
     </div>
   )
 }

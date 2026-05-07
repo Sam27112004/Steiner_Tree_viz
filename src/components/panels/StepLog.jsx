@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import { useAlgorithmStore } from '../../store/algorithmStore.js'
 import { useGraphStore } from '../../store/graphStore.js'
 import { usePlaybackStore } from '../../store/playbackStore.js'
@@ -162,16 +162,11 @@ function buildBigPictureRows({ steps, cursor, activeAlgorithm, graph, nodeMap, r
 }
 
 function StepLog({ steps, cursor }) {
-  const activeStepRef = useRef(null)
   const activePanel = useUiStore((state) => state.activePanel)
   const setActivePanel = useUiStore((state) => state.setActivePanel)
   const graph = useGraphStore((state) => state.activeGraph)
   const activeAlgorithm = usePlaybackStore((state) => state.activeTab)
   const resultsByAlgorithm = useAlgorithmStore((state) => state.resultsByAlgorithm)
-
-  useEffect(() => {
-    activeStepRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [cursor])
 
   const importantSteps = useMemo(
     () => steps.filter((step) => IMPORTANT_STEP_TYPES.has(step.type)),
@@ -202,40 +197,39 @@ function StepLog({ steps, cursor }) {
 
   const rows = useMemo(
     () =>
-      importantSteps.map((step, stepIndex) => {
+      importantSteps.map((step) => {
         const sourceIndex = steps.findIndex((candidate) => candidate.id === step.id)
         const isActive = sourceIndex === cursor
 
         return (
           <li
             key={step.id}
-            ref={isActive ? activeStepRef : null}
-            className={`rounded-2xl border px-3 py-2.5 transition-colors ${
+            className={`rounded-xl border px-3 py-2 transition-colors ${
               isActive
                 ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
                 : 'border-transparent bg-[rgba(255,255,255,0.02)] hover:border-border/70'
             }`}
           >
-            <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
+            <div className="mb-1 flex items-center justify-between gap-3 font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--color-visited)]">
               <span>{step.type}</span>
               <span>{step.phase}</span>
             </div>
-            <p className="text-sm leading-5 text-[var(--color-node-text)]">{step.explanation}</p>
+            <p className="text-xs leading-5 text-[var(--color-node-text)]">{step.explanation}</p>
           </li>
         )
       }),
-    [activeStepRef, cursor, importantSteps, steps],
+    [cursor, importantSteps, steps],
   )
 
   const simpleList = useMemo(
     () =>
-      explanationRows.map((stage, stageIndex) => {
+      explanationRows.map((stage) => {
         const state = stage.state
 
         return (
         <li
           key={stage.id}
-          className={`rounded-2xl border px-3 py-2.5 ${
+          className={`rounded-xl border px-3 py-2 ${
             state === 'current'
               ? 'border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] shadow-[0_0_0_1px_rgba(227,179,65,0.25)]'
               : state === 'done'
@@ -244,14 +238,14 @@ function StepLog({ steps, cursor }) {
           }`}
         >
           <div className="mb-1 flex items-center justify-between gap-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-consider)]">
+            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--color-consider)]">
               {stage.title}
             </p>
-            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--color-visited)]">
               {state}
             </span>
           </div>
-          <p className="text-sm leading-5 text-[var(--color-node-text)]">{stage.text}</p>
+          <p className="text-xs leading-5 text-[var(--color-node-text)]">{stage.text}</p>
         </li>
       )
     }),
@@ -259,21 +253,20 @@ function StepLog({ steps, cursor }) {
   )
 
   return (
-    <section className="flex h-full flex-col rounded-3xl border border-border bg-surface p-4 shadow-[0_12px_44px_rgba(0,0,0,0.22)]">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div>
+    <section className="flex h-full min-h-0 flex-col rounded-xl border border-border bg-[rgba(255,255,255,0.02)] p-3">
+      <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
+        <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold tracking-wide text-[var(--color-node-text)]">
             Logs
           </h2>
-          <p className="text-xs text-[var(--color-visited)]">Choose between technical detail and a simpler explanation.</p>
         </div>
-        <div className="flex items-center gap-2 rounded-2xl border border-border bg-[rgba(255,255,255,0.02)] p-1">
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-border bg-[rgba(255,255,255,0.02)] p-1">
           {LOG_TABS.map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActivePanel(tab.id)}
-              className={`rounded-xl px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${
+              className={`rounded-lg px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors ${
                 activePanel === tab.id
                   ? 'bg-[var(--color-consider)] text-black'
                   : 'text-[var(--color-visited)] hover:text-[var(--color-node-text)]'
@@ -287,37 +280,37 @@ function StepLog({ steps, cursor }) {
 
       {activePanel === 'steps' ? (
         <>
-          <div className="mb-3 rounded-2xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.1)] px-4 py-3">
+          <div className="mb-2 shrink-0 rounded-xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.1)] px-3 py-2">
             <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-consider)]">
               Now
             </p>
-            <p className="text-sm leading-5 text-[var(--color-node-text)]">{currentStep?.explanation ?? 'Run an algorithm to see the current step.'}</p>
+            <p className="text-xs leading-5 text-[var(--color-node-text)]">{currentStep?.explanation ?? 'Run an algorithm to see the current step.'}</p>
           </div>
 
-          <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
+          <div className="mb-2 flex shrink-0 items-center justify-between gap-3 text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
             <span>{importantSteps.length}/{steps.length} shown</span>
             <span>technical checkpoints</span>
           </div>
 
-          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[280px]">{rows}</ol>
+          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">{rows}</ol>
         </>
       ) : (
         <>
-          <div className="mb-3 rounded-2xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.1)] px-4 py-3">
+          <div className="mb-2 shrink-0 rounded-xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.1)] px-3 py-2">
             <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-consider)]">
               In plain words
             </p>
-            <p className="text-sm leading-5 text-[var(--color-node-text)]">
+            <p className="text-xs leading-5 text-[var(--color-node-text)]">
               {currentSimpleStage?.text ?? 'Run an algorithm to see graph-level explanation steps.'}
             </p>
           </div>
 
-          <div className="mb-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
+          <div className="mb-2 flex shrink-0 items-center justify-between gap-3 text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
             <span>{explanationRows.length} explanation logs</span>
             <span>graph-focused narration</span>
           </div>
 
-          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:max-h-[280px]">{simpleList}</ol>
+          <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">{simpleList}</ol>
         </>
       )}
     </section>

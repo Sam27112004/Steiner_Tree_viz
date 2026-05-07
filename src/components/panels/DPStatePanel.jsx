@@ -1,9 +1,23 @@
+import { useGraphStore } from '../../store/graphStore.js'
+
 function formatSubset(mask) {
   if (mask === 0) {
     return '0 (empty)'
   }
 
   return `${mask} (0b${mask.toString(2)})`
+}
+
+function formatTerminalSubset(mask, terminals, nodeById) {
+  if (mask === 0) {
+    return 'empty'
+  }
+
+  const labels = terminals
+    .filter((_, index) => (mask & (1 << index)) !== 0)
+    .map((nodeId) => nodeById.get(nodeId)?.label ?? String(nodeId))
+
+  return labels.length > 0 ? `{${labels.join(', ')}}` : formatSubset(mask)
 }
 
 function formatCost(value) {
@@ -19,6 +33,9 @@ function formatCost(value) {
 }
 
 function DPStatePanel({ renderState }) {
+  const graph = useGraphStore((state) => state.activeGraph)
+  const terminals = useGraphStore((state) => state.terminals)
+  const nodeById = new Map((graph.nodes ?? []).map((node) => [node.id, node]))
   const subsets = Object.keys(renderState.dpTable)
     .map((key) => Number(key))
     .sort((a, b) => a - b)
@@ -32,7 +49,7 @@ function DPStatePanel({ renderState }) {
         <h3 className="font-display text-lg font-semibold text-white">DP State</h3>
         <div className="text-right">
           <span className="block font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-consider)]">
-            S={activeSubset ?? '-'}
+            S={activeSubset !== null ? formatTerminalSubset(activeSubset, terminals, nodeById) : '-'}
           </span>
           <span className="block font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-visited)]">
             {activeNodes} nodes visible
@@ -47,7 +64,7 @@ function DPStatePanel({ renderState }) {
           <div className="rounded-2xl border border-[var(--color-consider)] bg-[rgba(227,179,65,0.12)] px-3 py-2">
             <div className="mb-1 flex items-center justify-between gap-3">
               <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-consider)]">
-                Active Subset {formatSubset(activeSubset)}
+                Active Subset {formatTerminalSubset(activeSubset, terminals, nodeById)}
               </span>
               <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
                 primary visualization
@@ -80,6 +97,9 @@ function DPStatePanel({ renderState }) {
                 >
                   <div className="mb-1 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-visited)]">
                     Subset {formatSubset(subset)}
+                    <span className="ml-2 text-[var(--color-consider)]">
+                      {formatTerminalSubset(subset, terminals, nodeById)}
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs text-[var(--color-visited)]">
                     <span>{Object.keys(row).length} cached values</span>

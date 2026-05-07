@@ -448,7 +448,7 @@ export function dreyfusWagner({ nodes, edges, terminals }) {
         STEP_TYPES.RESULT_TREE_EDGE,
         'RESULT',
         { edgeId },
-        `Edge ${edge.u}→${edge.v} belongs to the final Steiner tree.`,
+        `Edge ${edge.u} to ${edge.v} belongs to the final Steiner tree.`,
         { edges: [edgeId], nodes: [edge.u, edge.v] },
       ),
     )

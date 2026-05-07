@@ -194,7 +194,7 @@ export function dijkstra({ nodes, edges, source, targets }) {
               oldCost: existingCost,
               newCost: candidateCost,
             },
-            `Edge ${current.nodeId}→${neighbor.to} relaxes distance from ${existingCost >= INF ? 'INF' : existingCost} to ${candidateCost}.`,
+            `Edge ${current.nodeId} to ${neighbor.to} relaxes distance from ${existingCost >= INF ? 'INF' : existingCost} to ${candidateCost}.`,
             { nodes: [current.nodeId, neighbor.to], edges: [neighbor.edgeId] },
           ),
         )
@@ -212,7 +212,7 @@ export function dijkstra({ nodes, edges, source, targets }) {
               existingCost,
               newCost: candidateCost,
             },
-            `Edge ${current.nodeId}→${neighbor.to} skipped because ${existingCost} is better than ${candidateCost}.`,
+            `Edge ${current.nodeId} to ${neighbor.to} skipped because ${existingCost} is better than ${candidateCost}.`,
             { nodes: [current.nodeId, neighbor.to], edges: [neighbor.edgeId] },
           ),
         )

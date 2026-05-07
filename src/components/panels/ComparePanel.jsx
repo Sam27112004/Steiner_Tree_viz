@@ -2,12 +2,12 @@ import { useGraphStore } from '../../store/graphStore.js'
 import { useAlgorithmStore } from '../../store/algorithmStore.js'
 
 const ALGORITHMS = [
-  { id: 'steiner', label: 'Steiner' },
-  { id: 'dijkstra', label: 'Dijkstra' },
-  { id: 'mst', label: 'MST (Prim)' },
+  { id: 'steiner', label: 'Steiner', purpose: 'Connect terminals only; use relays if they help.' },
+  { id: 'dijkstra', label: 'Dijkstra', purpose: 'Shortest paths from one source terminal.' },
+  { id: 'mst', label: 'MST (Prim)', purpose: 'Connect every node, not just terminals.' },
 ]
 
-function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
+function MiniCanvas({ graph, algorithmLabel, purpose, result, isWinner, baselineCost }) {
   const highlightedEdges = new Set(result?.treeEdges ?? [])
   const activeNodeIds = new Set()
 
@@ -42,6 +42,7 @@ function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
           {result ? `cost ${result.cost}` : 'not run'}
         </span>
       </div>
+      <p className="mb-2 text-xs leading-5 text-[var(--color-visited)]">{purpose}</p>
 
       <svg
         viewBox="0 0 800 500"
@@ -83,6 +84,16 @@ function MiniCanvas({ graph, algorithmLabel, result, isWinner }) {
           )
         })}
       </svg>
+
+      {result && Number.isFinite(baselineCost) ? (
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--color-visited)]">
+          {result.cost === baselineCost
+            ? 'Matches Steiner cost'
+            : result.cost > baselineCost
+              ? `${result.cost - baselineCost} above Steiner`
+              : `${baselineCost - result.cost} below Steiner`}
+        </p>
+      ) : null}
     </div>
   )
 }
@@ -100,13 +111,14 @@ function ComparePanel() {
     ranked.length > 0
       ? ranked.reduce((best, current) => (current.result.cost < best.result.cost ? current : best)).id
       : null
+  const steinerCost = resultsByAlgorithm.steiner?.cost
 
   return (
     <section className="rounded-3xl border border-border bg-surface p-4 text-[var(--color-node-text)] shadow-[0_12px_44px_rgba(0,0,0,0.22)]">
       <div className="mb-3">
         <h3 className="font-display text-lg font-semibold text-white">Compare Trees</h3>
         <p className="mt-1 text-xs text-[var(--color-visited)]">
-          Mini canvases show tree shape and cost for each algorithm on the same graph.
+          Compare objective, tree shape, and cost. Steiner is the terminal-focused target.
         </p>
       </div>
 
@@ -116,8 +128,10 @@ function ComparePanel() {
             key={algorithm.id}
             graph={graph}
             algorithmLabel={algorithm.label}
+            purpose={algorithm.purpose}
             result={resultsByAlgorithm[algorithm.id]}
             isWinner={algorithm.id === winnerAlgorithmId}
+            baselineCost={steinerCost}
           />
         ))}
       </div>

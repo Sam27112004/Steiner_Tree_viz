@@ -11,6 +11,12 @@ export const GRAPHS = {
     name: 'Steiner Advantage',
     description: 'A relay node pulls the three terminals together more cheaply than a direct spanning tree.',
     insight: 'Node 4 acts as a relay and cuts the total cost well below an MST or SPT.',
+    lesson: {
+      learningGoal: 'Show that an optional relay can lower the cost of connecting terminals.',
+      terminals: 'A, D, and G are the mandatory destinations.',
+      relay: 'R sits near the middle, so several terminal routes can share it.',
+      takeaway: 'Steiner tree is useful when shared relay structure beats separate shortest paths.',
+    },
     nodes: [
       { id: 0, label: 'A', x: 110, y: 240 },
       { id: 1, label: 'B', x: 235, y: 120 },
@@ -43,6 +49,12 @@ export const GRAPHS = {
     name: 'Base Case',
     description: 'A tiny graph with two terminals for tracing the DP by hand.',
     insight: 'The first DP layer is just shortest paths from each terminal, which makes the recurrence concrete.',
+    lesson: {
+      learningGoal: 'Make the base case easy to inspect before larger terminal subsets appear.',
+      terminals: 'A and D are the only mandatory nodes.',
+      relay: 'Intermediate nodes simply form the cheapest path between the two terminals.',
+      takeaway: 'With two terminals, Steiner reduces to a shortest path between them.',
+    },
     nodes: [
       { id: 0, label: 'A', x: 140, y: 240 },
       { id: 1, label: 'B', x: 270, y: 120 },
@@ -65,6 +77,12 @@ export const GRAPHS = {
     name: 'MST Inefficiency',
     description: 'MST spans every node, including many non-terminals that multicast does not need.',
     insight: 'The MST drags in side branches that do not help connect the selected terminals efficiently.',
+    lesson: {
+      learningGoal: 'Contrast terminal-only routing with an all-node spanning tree objective.',
+      terminals: 'A, G, and I are the selected terminals.',
+      relay: 'Central relays help, but far side branches are not automatically useful.',
+      takeaway: 'MST may pay for nodes that the Steiner problem is allowed to ignore.',
+    },
     nodes: [
       { id: 0, label: 'A', x: 90, y: 250 },
       { id: 1, label: 'B', x: 190, y: 120 },
@@ -99,6 +117,12 @@ export const GRAPHS = {
     name: 'Dijkstra Bias',
     description: 'Single-source paths can miss a cheaper shared relay that Steiner discovers.',
     insight: 'A relay near the center produces shared routing that shortest paths from one source do not maximize.',
+    lesson: {
+      learningGoal: 'Show why shortest paths from one source are not always globally shared.',
+      terminals: 'S, T1, and T2 must be connected.',
+      relay: 'The center relay can share the route to both targets.',
+      takeaway: 'Dijkstra optimizes each source path; Steiner optimizes the shared terminal tree.',
+    },
     nodes: [
       { id: 0, label: 'S', x: 120, y: 250 },
       { id: 1, label: 'A', x: 240, y: 120 },
@@ -128,6 +152,12 @@ export const GRAPHS = {
     name: 'Real-World Analogy',
     description: 'A city-like network with four terminals and several possible relay hubs.',
     insight: 'Steiner routing chooses only strategic relay intersections to reduce long-haul link cost.',
+    lesson: {
+      learningGoal: 'Connect the Steiner idea to network design with several possible hubs.',
+      terminals: 'Four marked intersections must be connected.',
+      relay: 'Only strategically placed intersections should become relay hubs.',
+      takeaway: 'The best network uses enough hubs to share cost without spanning the whole city.',
+    },
     nodes: [
       { id: 0, label: 'N1', x: 80, y: 120 },
       { id: 1, label: 'N2', x: 80, y: 300 },

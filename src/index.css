@@ -85,6 +85,20 @@ svg {
   animation: nodePulse 900ms ease-in-out infinite;
 }
 
+@keyframes traceFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+.trace-flow {
+  animation: traceFlow 900ms linear infinite;
+  pointer-events: none;
+}
+
 ::selection {
   background: rgba(121, 192, 255, 0.3);
   color: white;

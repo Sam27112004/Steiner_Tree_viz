@@ -4,9 +4,11 @@ import { dreyfusWagner } from './algorithms/dreyfusWagner.js'
 import { prim } from './algorithms/prim.js'
 import MainLayout from './components/layout/MainLayout.jsx'
 import { buildRenderState } from './engine/playback.js'
+import { buildSteinerStoryTrace } from './engine/storyTrace.js'
 import { useAlgorithmStore } from './store/algorithmStore.js'
 import { useGraphStore } from './store/graphStore.js'
 import { usePlaybackStore } from './store/playbackStore.js'
+import { useUiStore } from './store/uiStore.js'
 
 function App() {
   const graph = useGraphStore((state) => state.activeGraph)
@@ -18,6 +20,9 @@ function App() {
   const activeTab = usePlaybackStore((state) => state.activeTab)
   const setCursor = usePlaybackStore((state) => state.setCursor)
   const stopPlaying = usePlaybackStore((state) => state.stopPlaying)
+  const setStoryCursor = useUiStore((state) => state.setStoryCursor)
+  const setCanvasMode = useUiStore((state) => state.setCanvasMode)
+  const setTechnicalPanel = useUiStore((state) => state.setTechnicalPanel)
 
   const renderState = useMemo(() => buildRenderState(steps, cursor), [steps, cursor])
 
@@ -47,11 +52,23 @@ function App() {
     const mstResult = prim({
       nodes: graph.nodes,
       edges: graph.edges,
+      terminals,
     })
 
-    setRunResults([steinerResult, dijkstraResult, mstResult])
+    const results = [steinerResult, dijkstraResult, mstResult]
+    const resultsByAlgorithm = Object.fromEntries(results.map((result) => [result.algorithm, result]))
+    const storySteps = buildSteinerStoryTrace({
+      graph,
+      terminals,
+      resultsByAlgorithm,
+    })
+
+    setRunResults(results, storySteps)
     setActiveAlgorithmData(activeTab)
     setCursor(0)
+    setStoryCursor(0)
+    setCanvasMode('story')
+    setTechnicalPanel('guide')
     stopPlaying()
   }
 

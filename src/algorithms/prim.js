@@ -85,7 +85,7 @@ function createPriorityQueue() {
   }
 }
 
-export function prim({ nodes, edges }) {
+export function prim({ nodes, edges, terminals = [] }) {
   const adjacency = createAdjacencyList(nodes, edges)
   const visited = new Set()
   const queue = createPriorityQueue()
@@ -106,7 +106,7 @@ export function prim({ nodes, edges }) {
           insight: '',
           nodes,
           edges,
-          defaultTerminals: [],
+          defaultTerminals: terminals,
         },
       },
       'Graph loaded for Prim minimum-spanning-tree run.',

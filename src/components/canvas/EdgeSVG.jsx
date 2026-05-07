@@ -8,7 +8,7 @@ const EDGE_STYLE = {
   rejected: { stroke: 'var(--color-reject)', width: 1 },
 }
 
-function EdgeSVG({ edge, fromNode, toNode, state }) {
+function EdgeSVG({ edge, fromNode, toNode, state, isCurrent = false }) {
   const visualStyle = EDGE_STYLE[state?.status] ?? EDGE_STYLE.default
   const midpointX = (fromNode.x + toNode.x) / 2
   const midpointY = (fromNode.y + toNode.y) / 2
@@ -39,6 +39,20 @@ function EdgeSVG({ edge, fromNode, toNode, state }) {
           />
         ) : null}
       </line>
+      {isCurrent ? (
+        <line
+          className="trace-flow"
+          x1={fromNode.x}
+          y1={fromNode.y}
+          x2={toNode.x}
+          y2={toNode.y}
+          stroke="var(--color-consider)"
+          strokeWidth="7"
+          strokeDasharray="10 14"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+      ) : null}
       <rect
         x={midpointX - 12}
         y={midpointY - 9}

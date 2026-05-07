@@ -14,6 +14,7 @@ const createStepMap = () => ({
 
 export const useAlgorithmStore = create((set) => ({
   steps: [],
+  storySteps: [],
   result: null,
   resultsByAlgorithm: createAlgorithmMap(),
   stepsByAlgorithm: createStepMap(),
@@ -30,7 +31,7 @@ export const useAlgorithmStore = create((set) => ({
         [result.algorithm]: result.steps,
       },
     })),
-  setRunResults: (results) =>
+  setRunResults: (results, storySteps = []) =>
     set((state) => {
       const nextResultsByAlgorithm = { ...state.resultsByAlgorithm }
       const nextStepsByAlgorithm = { ...state.stepsByAlgorithm }
@@ -41,6 +42,7 @@ export const useAlgorithmStore = create((set) => ({
       }
 
       return {
+        storySteps,
         resultsByAlgorithm: nextResultsByAlgorithm,
         stepsByAlgorithm: nextStepsByAlgorithm,
       }
@@ -53,6 +55,7 @@ export const useAlgorithmStore = create((set) => ({
   clearResult: () =>
     set(() => ({
       steps: [],
+      storySteps: [],
       result: null,
       resultsByAlgorithm: createAlgorithmMap(),
       stepsByAlgorithm: createStepMap(),

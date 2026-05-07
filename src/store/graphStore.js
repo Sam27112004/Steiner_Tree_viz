@@ -8,7 +8,7 @@ export const useGraphStore = create((set) => ({
   graphs: graphList,
   activeGraphId: initialGraph.id,
   activeGraph: initialGraph,
-  terminals: initialGraph.defaultTerminals,
+  terminals: [...initialGraph.defaultTerminals],
   setActiveGraphId: (graphId) =>
     set(() => {
       const nextGraph = GRAPHS[graphId] ?? initialGraph
